@@ -3,7 +3,6 @@ import { chromium, ElementHandle, Page } from 'playwright'
 import { ThreadsFollowDto } from '../api/dto/threads-follow.dto'
 import { PrismaService } from '@main/app/shared/prisma.service'
 import { SettingsService } from '../../settings/settings.service'
-import os from 'os'
 
 @Injectable()
 export class ThreadsService {
@@ -32,7 +31,7 @@ export class ThreadsService {
     this.logging(jobId, `Threads 자동화 작업을 시작합니다. 키워드: ${keyword}`)
     const browser = await chromium.launch({
       headless: !appSettings.showBrowserWindow,
-      executablePath: this.getChromiumExecutablePath(),
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
     })
     const context = await browser.newContext({
       viewport: { width: 393, height: 852 },
@@ -222,16 +221,5 @@ export class ThreadsService {
         message,
       },
     })
-  }
-
-  private getChromiumExecutablePath() {
-    const platform = os.platform()
-    if (platform === 'darwin') {
-      return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-    } else if (platform === 'win32') {
-      return 'C:\\Program Files (x86)\\Chromium\\Application\\chrome.exe'
-    } else {
-      throw new Error('Unsupported OS')
-    }
   }
 }

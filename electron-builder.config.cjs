@@ -14,7 +14,7 @@ const config = {
     {
       provider: 'github',
       owner: 'pyramid-ing',
-      repo: 'f2t-tmgkfl-pc',
+      repo: 'tmgkfl',
       releaseType: 'release',
     },
   ],
