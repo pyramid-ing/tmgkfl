@@ -230,8 +230,6 @@ export class ThreadsService {
       return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     } else if (platform === 'win32') {
       return 'C:\\Program Files (x86)\\Chromium\\Application\\chrome.exe'
-    } else if (platform === 'linux') {
-      return '/usr/bin/chromium-browser'
     } else {
       throw new Error('Unsupported OS')
     }
