@@ -81,34 +81,6 @@ export function getErrorDetails(error: any): string | undefined {
   return undefined
 }
 
-// DCinside 워크플로우 엑셀 업로드
-export async function uploadDcinsideExcel(file: File): Promise<any> {
-  const formData = new FormData()
-  formData.append('file', file)
-  const res = await apiClient.post('/dcinside/workflow/posting/excel-upload', formData)
-  return res.data
-}
-
-// OpenAI API 키 서버 저장/불러오기
-export async function saveOpenAIApiKeyToServer(key: string) {
-  const res = await apiClient.post('/settings/global', { openAIApiKey: key })
-  return res.data
-}
-
-export async function getOpenAIApiKeyFromServer(): Promise<string> {
-  const res = await apiClient.get('/settings/global')
-  return res.data?.data?.openAIApiKey || ''
-}
-
-// OpenAI API 키 검증
-export async function validateOpenAIApiKey(apiKey: string): Promise<{
-  valid: boolean
-  error?: string
-  model?: string
-}> {
-  const res = await apiClient.post('/settings/validate-openai-key', { apiKey })
-  return res.data
-}
 
 export async function saveAppSettingsToServer(settings: AppSettings) {
   const res = await apiClient.post('/settings/app', settings)
@@ -118,44 +90,4 @@ export async function saveAppSettingsToServer(settings: AppSettings) {
 export async function getAppSettingsFromServer(): Promise<AppSettings> {
   const res = await apiClient.get('/settings/app')
   return res.data?.data || { showBrowserWindow: true }
-}
-
-// ------------------------------
-// PostJob (예약/작업) API
-// ------------------------------
-
-export interface PostJob {
-  id: number
-  galleryUrl: string
-  title: string
-  scheduledAt: string
-  status: string
-  resultMsg?: string
-  resultUrl?: string
-  createdAt: string
-  updatedAt: string
-  headtext?: string
-}
-
-// 목록 가져오기
-export async function getPostJobs(params?: {
-  status?: string
-  search?: string
-  orderBy?: string
-  order?: 'asc' | 'desc'
-}): Promise<PostJob[]> {
-  const res = await apiClient.get('/dcinside/api/post-jobs', { params })
-  return res.data
-}
-
-// 실패/대기중 Job 재시도
-export async function retryPostJob(id: number): Promise<any> {
-  const res = await apiClient.post(`/dcinside/api/post-jobs/${id}/retry`)
-  return res.data
-}
-
-// 작업 삭제
-export async function deletePostJob(id: number): Promise<any> {
-  const res = await apiClient.delete(`/dcinside/api/post-jobs/${id}`)
-  return res.data
 }
