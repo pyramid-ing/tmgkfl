@@ -1,17 +1,19 @@
-import { join } from 'node:path'
 import { ElectronModule } from '@doubleshot/nest-electron'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_FILTER, HttpAdapterHost } from '@nestjs/core'
 import { ScheduleModule } from '@nestjs/schedule'
 import { app, BrowserWindow } from 'electron'
+import { join } from 'node:path'
 import { GlobalExceptionFilter } from '../filters/global-exception.filter'
 import customConfig from './config/custom-config'
-import { SettingsModule } from './modules/settings/settings.module'
-import { PrismaService } from './shared/prisma.service'
-import { UtilModule } from './modules/util/util.module'
-import { ThreadsModule } from './modules/threads/threads.module'
+import { CommonModule } from './modules/common/common.module'
+import { PrismaService } from './modules/common/prisma/prisma.service'
 import { LogsModule } from './modules/logs/logs.module'
+import { PostJobsModule } from './modules/post-jobs/post-jobs.module'
+import { SettingsModule } from './modules/settings/settings.module'
+import { ThreadsModule } from './modules/threads/threads.module'
+import { UtilModule } from './modules/util/util.module'
 
 @Module({
   imports: [
@@ -45,9 +47,11 @@ import { LogsModule } from './modules/logs/logs.module'
     }),
     SettingsModule,
     ScheduleModule.forRoot(),
+    CommonModule,
     UtilModule,
     ThreadsModule,
     LogsModule,
+    PostJobsModule,
   ],
   providers: [
     {

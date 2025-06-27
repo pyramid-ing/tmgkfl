@@ -1,8 +1,8 @@
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common'
-import type { HttpAdapterHost } from '@nestjs/core'
-import type { ErrorResponse } from './error.types'
 import { Catch, HttpException, HttpStatus, Logger } from '@nestjs/common'
+import type { HttpAdapterHost } from '@nestjs/core'
 import { AxiosError } from 'axios'
+import type { ErrorResponse } from './error.types'
 import {
   BingAuthError,
   BingConfigError,

@@ -1,7 +1,7 @@
 // 파일 존재 여부 확인
-import path from 'node:path'
 import { app } from 'electron'
 import electronLog from 'electron-log'
+import path from 'node:path'
 
 import { EnvConfig } from './env.config'
 

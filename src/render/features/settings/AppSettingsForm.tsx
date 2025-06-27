@@ -1,7 +1,7 @@
-import type { AppSettings } from '../../types/settings'
 import { Button, Form, message, Space, Switch } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { getAppSettingsFromServer, saveAppSettingsToServer } from '../../api'
+import type { AppSettings } from '../../types/settings'
 
 const AppSettingsForm: React.FC = () => {
   const [form] = Form.useForm()

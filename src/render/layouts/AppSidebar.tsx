@@ -1,11 +1,9 @@
-import { SettingOutlined, ThunderboltOutlined } from '@ant-design/icons'
-import { Layout, Typography, Menu } from 'antd'
+import { SettingOutlined, ThunderboltOutlined, UploadOutlined } from '@ant-design/icons'
+import { Layout, Menu } from 'antd'
 import React, { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import UpdateManager from '../components/UpdateManager'
-
-const { Text } = Typography
 
 const { Sider } = Layout
 
@@ -116,7 +114,8 @@ const AppSidebar: React.FC = () => {
 
   const getSelectedKey = () => {
     if (location.pathname === '/') return '1'
-    if (location.pathname.startsWith('/settings')) return '2'
+    if (location.pathname.startsWith('/post-jobs')) return '2'
+    if (location.pathname.startsWith('/settings')) return '3'
     return '1'
   }
 
@@ -136,6 +135,11 @@ const AppSidebar: React.FC = () => {
           },
           {
             key: '2',
+            icon: <UploadOutlined />,
+            label: <NavLink to="/post-jobs">자동 포스팅</NavLink>,
+          },
+          {
+            key: '3',
             icon: <SettingOutlined />,
             label: <NavLink to="/settings">설정</NavLink>,
           },

@@ -1,5 +1,5 @@
+import { MinusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { Button, Checkbox, Form, Input, InputNumber, message, Table } from 'antd'
-import { MinusCircleOutlined } from '@ant-design/icons'
 import React, { useEffect } from 'react'
 import { apiClient } from '../api'
 import PageContainer from '../components/shared/PageContainer'
@@ -74,14 +74,22 @@ const ThreadsPage: React.FC = () => {
   }
 
   return (
-    <PageContainer title="자동 스하리">
+    <PageContainer
+      title={
+        <span>
+          <ThunderboltOutlined style={{ marginRight: 8 }} />
+          자동 스하리
+        </span>
+      }
+      centered
+    >
       <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ followMessages: [''] }}>
         <Form.Item
           name="id"
           label="인스타그램 ID"
           rules={[{ required: true, message: '인스타그램 ID를 입력해주세요.' }]}
         >
-          <Input.Password />
+          <Input />
         </Form.Item>
         <Form.Item name="password" label="비밀번호" rules={[{ required: true, message: '비밀번호를 입력해주세요.' }]}>
           <Input.Password />
@@ -150,7 +158,7 @@ const ThreadsPage: React.FC = () => {
           {(fields, { add, remove }) => (
             <>
               {fields.map((field, index) => (
-                <Form.Item label={index === 0 ? '팔로우 요청 멘트' : ''} required={false} key={field.key}>
+                <Form.Item label={index === 0 ? '댓글 멘트 (ex. 팔로우요청)' : ''} required={false} key={field.key}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Form.Item
                       {...field}
@@ -195,7 +203,7 @@ const ThreadsPage: React.FC = () => {
             <Checkbox>리포스트</Checkbox>
           </Form.Item>
           <Form.Item name="commentAction" valuePropName="checked" noStyle>
-            <Checkbox>답글</Checkbox>
+            <Checkbox>댓글</Checkbox>
           </Form.Item>
         </Form.Item>
         <Form.Item>

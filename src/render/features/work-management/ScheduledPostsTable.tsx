@@ -1,6 +1,6 @@
-import type { PostJob } from '../../api'
 import { Button, Input, message, Popconfirm, Select, Space, Table, Tag } from 'antd'
 import React, { useEffect, useState } from 'react'
+import type { PostJob } from '../../api'
 import { deletePostJob, getPostJobs, retryPostJob } from '../../api'
 import PageContainer from '../../components/shared/PageContainer'
 

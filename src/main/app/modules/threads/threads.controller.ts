@@ -1,13 +1,13 @@
 import { Body, Controller, Post } from '@nestjs/common'
-import { ThreadsService } from '../workflow/threads.service'
-import { ThreadsFollowDto } from './dto/threads-follow.dto'
 import { randomUUID } from 'crypto'
+import { ThreadsFollowDto } from './dto/threads-follow.dto'
+import { ThreadsService } from './threads.service'
 
-@Controller('threads')
+@Controller('/threads')
 export class ThreadsController {
   constructor(private readonly threadsService: ThreadsService) {}
 
-  @Post('start')
+  @Post('/start')
   async startAutomation(
     @Body()
     ThreadsFollowDto: ThreadsFollowDto,

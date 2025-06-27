@@ -16,19 +16,14 @@ model Settings {
 
 model PostJob {
   id            Int      @id @default(autoincrement())
-  galleryUrl    String
-  title         String
-  contentHtml   String
-  password      String
-  nickname      String?
-  headtext      String?
-  imagePaths    String?  // JSON stringified array
-  loginId       String?
-  loginPassword String?
-  scheduledAt   DateTime
+  subject       String?
+  desc          String
+  loginId       String
+  loginPw       String
   status        String   // "pending" | "completed" | "failed"
   resultMsg     String?
-  resultUrl     String?
+  scheduledAt   DateTime
+  postedAt      DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

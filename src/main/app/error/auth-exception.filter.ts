@@ -1,6 +1,6 @@
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common'
-import type { Request, Response } from 'express'
 import { Catch, HttpException, NotFoundException, UnauthorizedException } from '@nestjs/common'
+import type { Request, Response } from 'express'
 
 @Catch(HttpException, NotFoundException, UnauthorizedException)
 export class AuthExceptionFilter implements ExceptionFilter {

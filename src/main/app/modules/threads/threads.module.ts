@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common'
-import { ThreadsController } from './api/threads.controller'
-import { ThreadsService } from './workflow/threads.service'
-import { PrismaService } from '@main/app/shared/prisma.service'
 import { SettingsModule } from '../settings/settings.module'
+import { WorkflowModule } from '../workflow/workflow.module'
+import { ThreadsController } from './threads.controller'
+import { ThreadsService } from './threads.service'
 
 @Module({
-  imports: [SettingsModule],
+  imports: [SettingsModule, WorkflowModule],
   controllers: [ThreadsController],
-  providers: [PrismaService, ThreadsService],
+  providers: [ThreadsService],
 })
 export class ThreadsModule {}

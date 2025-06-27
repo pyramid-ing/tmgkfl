@@ -37,7 +37,7 @@ export default [
     plugins: {
       'unused-imports': unusedImports,
       '@typescript-eslint': typescriptEslint,
-      'prettier': prettier,
+      prettier: prettier,
     },
     rules: {
       ...prettierConfig.rules,
@@ -47,21 +47,7 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      'prettier/prettier': [
-        'error',
-        // 개인 선호에 따라 prettier 문법 적용
-        {
-          singleQuote: true,
-          semi: false,
-          useTabs: false,
-          tabWidth: 2,
-          trailingComma: 'all',
-          bracketSpacing: true,
-          arrowParens: 'avoid',
-          endOfLine: 'auto',
-          printWidth: 120,
-        },
-      ],
+      'prettier/prettier': 'error',
     },
   },
 ]

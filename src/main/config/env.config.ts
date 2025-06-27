@@ -1,7 +1,7 @@
+import { app } from 'electron'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import path from 'node:path'
-import { app } from 'electron'
 import { LoggerConfig } from './logger.config'
 
 export class EnvConfig {

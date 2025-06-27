@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import AppLayout from '../layouts/AppLayout'
+import PostJobPage from './PostJob'
 import SettingsPage from './Settings'
 import ThreadsPage from './Threads'
 
@@ -19,6 +20,7 @@ const App: React.FC = () => {
     <AppLayout>
       <Routes>
         <Route path="/" element={<ThreadsPage />} />
+        <Route path="/post-jobs" element={<PostJobPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </AppLayout>

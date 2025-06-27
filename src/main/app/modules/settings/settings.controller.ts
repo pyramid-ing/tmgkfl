@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Logger, Post, Put, Param } from '@nestjs/common'
+import { Body, Controller, Get, Logger, Param, Post, Put } from '@nestjs/common'
 import { SettingsService } from 'src/main/app/modules/settings/settings.service'
-import { PrismaService } from '../../shared/prisma.service'
+import { PrismaService } from '../common/prisma/prisma.service'
 
-@Controller('settings')
+@Controller('/settings')
 export class SettingsController {
   private readonly logger = new Logger(SettingsController.name)
 
@@ -11,7 +11,7 @@ export class SettingsController {
     private readonly settingsService: SettingsService,
   ) {}
 
-  @Get('global')
+  @Get('/global')
   async getGlobalSettings() {
     try {
       const setting = await this.settingsService.findByKey('global')
@@ -22,7 +22,7 @@ export class SettingsController {
     }
   }
 
-  @Post('global')
+  @Post('/global')
   async saveGlobalSettings(@Body() data: any) {
     try {
       await this.settingsService.saveByKey('global', data)
@@ -33,7 +33,7 @@ export class SettingsController {
     }
   }
 
-  @Get('app')
+  @Get('/app')
   async getAppSettings() {
     try {
       const setting = await this.settingsService.findByKey('app')
@@ -47,7 +47,7 @@ export class SettingsController {
     }
   }
 
-  @Post('app')
+  @Post('/app')
   async saveAppSettings(@Body() data: any) {
     try {
       await this.settingsService.saveByKey('app', data)
@@ -58,22 +58,22 @@ export class SettingsController {
     }
   }
 
-  @Get()
+  @Get('/')
   async getAllSettings() {
     return this.settingsService.findAll()
   }
 
-  @Get(':key')
+  @Get('/:key')
   async getSettingByKey(@Param('key') key: string) {
     return this.settingsService.findByKey(key)
   }
 
-  @Put(':key')
+  @Put('/:key')
   async updateSetting(@Param('key') key: string, @Body() data: any) {
     return this.settingsService.upsert(key, data)
   }
 
-  @Post('validate-openai-key')
+  @Post('/validate-openai-key')
   async validateOpenAIKey(@Body() body: { apiKey: string }) {
     return this.settingsService.validateOpenAIKey(body.apiKey)
   }
