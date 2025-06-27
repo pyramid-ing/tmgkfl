@@ -3,6 +3,7 @@ import { chromium, ElementHandle, Page } from 'playwright'
 import { ThreadsFollowDto } from '../api/dto/threads-follow.dto'
 import { PrismaService } from '@main/app/shared/prisma.service'
 import { SettingsService } from '../../settings/settings.service'
+import { random } from 'lodash'
 
 @Injectable()
 export class ThreadsService {
@@ -21,11 +22,12 @@ export class ThreadsService {
       keyword,
       minDelay,
       maxDelay,
-      followMessage,
+      followMessages,
       followAction,
       likeAction,
       repostAction,
       commentAction,
+      maxCount,
     } = threadsFollowDto
 
     this.logging(jobId, `Threads 자동화 작업을 시작합니다. 키워드: ${keyword}`)
@@ -85,12 +87,33 @@ export class ThreadsService {
 
       const articleSelector = 'div[data-interactive-id]'
       await page.waitForSelector(articleSelector, { timeout: 30000 })
-      const articles = await page.$$(articleSelector)
-      for (const article of articles) {
-        this.logging(jobId, '게시물을 처리합니다.')
+
+      this.logging(jobId, '게시물 목록 조회완료')
+      let articles = await page.$$(articleSelector)
+
+      let currentArticleIndex = 0
+      let processedCount = 0
+      while (processedCount < maxCount) {
+        if (currentArticleIndex >= articles.length) {
+          articles = await page.$$(articleSelector)
+          currentArticleIndex = 0
+        }
+        const article = articles[processedCount]
+        if (!article) {
+          this.logging(jobId, '게시물을 찾지 못했습니다')
+          break
+        }
+        await page.evaluate(el => {
+          el.scrollIntoView({ behavior: 'smooth' })
+        }, article)
+        await page.waitForTimeout(1000)
+
+        currentArticleIndex++
+        processedCount++
         const desc = await article.$('div > div:nth-child(3) > div > div:nth-child(1)')
         const descText = await desc?.textContent()
         const articleText = `[${descText?.slice(0, 20)}...]`
+        this.logging(jobId, `${articleText} 게시물을 처리합니다. (${processedCount} / ${maxCount})`)
         if (followAction) {
           await this.followArticle(page, jobId, articleText, article as unknown as ElementHandle<HTMLDivElement>)
           await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
@@ -109,13 +132,11 @@ export class ThreadsService {
             jobId,
             articleText,
             article as unknown as ElementHandle<HTMLDivElement>,
-            followMessage,
+            followMessages,
           )
           await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
         }
       }
-
-      await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 100000)
 
       this.logging(jobId, '자동화 작업이 성공적으로 완료되었습니다.')
       await browser.close()
@@ -186,8 +207,15 @@ export class ThreadsService {
     jobId: string,
     articleText: string,
     article: ElementHandle<HTMLDivElement>,
-    followMessage: string,
+    followMessages: string[],
   ) {
+    const commentMessages = followMessages.filter(message => message.trim() !== '')
+    if (commentMessages.length === 0) {
+      this.logging(jobId, `팔로우 요청멘트가 없어 답글을 작성하지 않습니다.`)
+      return
+    }
+
+    const followMessage = commentMessages[random(0, commentMessages.length - 1)]
     const commentButton = await article.$('svg[aria-label="답글"]')
     if (!commentButton) {
       this.logging(jobId, `${articleText} 답글 버튼 찾을 수 없음`)

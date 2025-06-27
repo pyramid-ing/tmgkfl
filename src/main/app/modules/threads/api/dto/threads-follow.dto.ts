@@ -4,9 +4,10 @@ export class ThreadsFollowDto {
   keyword: string
   minDelay: number
   maxDelay: number
-  followMessage: string
+  followMessages: string[]
   followAction: boolean
   likeAction: boolean
   repostAction: boolean
   commentAction: boolean
+  maxCount: number
 }

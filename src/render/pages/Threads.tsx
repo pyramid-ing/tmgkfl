@@ -1,4 +1,5 @@
 import { Button, Checkbox, Form, Input, InputNumber, message, Table } from 'antd'
+import { MinusCircleOutlined } from '@ant-design/icons'
 import React, { useEffect } from 'react'
 import { apiClient } from '../api'
 import PageContainer from '../components/shared/PageContainer'
@@ -15,7 +16,8 @@ const ThreadsPage: React.FC = () => {
     try {
       const savedData = localStorage.getItem(STORAGE_KEY)
       if (savedData) {
-        form.setFieldsValue(JSON.parse(savedData))
+        const parsed = JSON.parse(savedData)
+        form.setFieldsValue(parsed)
       }
     } catch (e) {
       console.error('Failed to load data from localStorage', e)
@@ -54,11 +56,12 @@ const ThreadsPage: React.FC = () => {
         keyword: values.keyword,
         minDelay: values.minDelay,
         maxDelay: values.maxDelay,
-        followMessage: values.followMessage,
+        followMessages: values.followMessages,
         followAction: values.followAction ?? false,
         likeAction: values.likeAction ?? false,
         repostAction: values.repostAction ?? false,
         commentAction: values.commentAction ?? false,
+        maxCount: values.maxCount,
       })
       setJobId(data.jobId)
       message.success(data.message)
@@ -72,7 +75,7 @@ const ThreadsPage: React.FC = () => {
 
   return (
     <PageContainer title="자동 스하리">
-      <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{}}>
+      <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ followMessages: [''] }}>
         <Form.Item
           name="id"
           label="인스타그램 ID"
@@ -129,18 +132,58 @@ const ThreadsPage: React.FC = () => {
             <InputNumber min={1} max={60} placeholder="최대 딜레이" style={{ width: '100%' }} />
           </Form.Item>
         </Form.Item>
+
         <Form.Item
-          name="followMessage"
-          label="팔로우 요청 멘트"
+          name="maxCount"
+          label="최대 작업 횟수"
           rules={[
             {
               required: true,
-              message: '팔로우 요청시 보낼 멘트를 입력해주세요.',
+              message: '최대 작업 횟수를 입력해주세요.',
             },
           ]}
         >
-          <Input.TextArea rows={4} />
+          <InputNumber min={1} max={999} style={{ width: '100%' }} />
         </Form.Item>
+
+        <Form.List name="followMessages">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map((field, index) => (
+                <Form.Item label={index === 0 ? '팔로우 요청 멘트' : ''} required={false} key={field.key}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Form.Item
+                      {...field}
+                      validateTrigger={['onChange', 'onBlur']}
+                      rules={[
+                        {
+                          required: true,
+                          whitespace: true,
+                          message: '멘트를 입력하거나 이 항목을 삭제해주세요.',
+                        },
+                      ]}
+                      noStyle
+                      style={{ flex: 1, marginRight: 8 }}
+                    >
+                      <Input.TextArea rows={6} placeholder="팔로우시 상대방에게 보낼 메시지" />
+                    </Form.Item>
+                    {fields.length > 1 ? (
+                      <MinusCircleOutlined
+                        style={{ marginLeft: 10, color: 'red', fontSize: 20 }}
+                        onClick={() => remove(field.name)}
+                      />
+                    ) : null}
+                  </div>
+                </Form.Item>
+              ))}
+              <Form.Item>
+                <Button type="dashed" onClick={() => add()} block>
+                  + 멘트 추가 (여러개중 랜덤으로 댓글포스팅)
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
         <Form.Item label="자동화 작업 선택">
           <Form.Item name="followAction" valuePropName="checked" noStyle>
             <Checkbox>팔로우</Checkbox>
