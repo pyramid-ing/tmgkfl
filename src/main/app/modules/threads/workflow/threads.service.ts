@@ -121,7 +121,7 @@ export class ThreadsService {
       await browser.close()
     } catch (error: any) {
       console.error(error)
-      this.logging(jobId, '자동화 작업 중 오류가 발생했습니다.')
+      this.logging(jobId, '자동화 작업 중 오류 혹은 사용자 취소가 발생했습니다.')
       await browser.close()
     }
   }
@@ -181,7 +181,6 @@ export class ThreadsService {
       }
     }
   }
-
   private async commentArticle(
     page: Page,
     jobId: string,
@@ -197,15 +196,31 @@ export class ThreadsService {
       await commentButton.click()
       await page.waitForTimeout(3000)
       await page.keyboard.insertText(followMessage)
+      await page.waitForTimeout(1000)
       const buttons = await page.$$('div.__fb-light-mode div[role="button"]')
-      for (const button of buttons) {
-        const buttonText = await button.textContent()
-        if (buttonText?.includes('게시')) {
+      let isProcess = false
+      // 팝업패턴
+      if (buttons.length > 0) {
+        for (const button of buttons) {
+          const buttonText = await button.textContent()
+          if (buttonText?.includes('게시')) {
+            isProcess = true
+            await button.click()
+            break
+          }
+        }
+      } else {
+        const button = await article.$('svg[aria-label="답글"][viewBox="0 0 24 24"]')
+        if (button) {
+          isProcess = true
           await button.click()
-          break
         }
       }
-      this.logging(jobId, `${articleText} 답글 완료`)
+      if (isProcess) {
+        this.logging(jobId, `${articleText} 답글 완료`)
+      } else {
+        this.logging(jobId, `${articleText} 답글 전송버튼 찾을 수 없음`)
+      }
     }
   }
 

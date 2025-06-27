@@ -81,7 +81,6 @@ export function getErrorDetails(error: any): string | undefined {
   return undefined
 }
 
-
 export async function saveAppSettingsToServer(settings: AppSettings) {
   const res = await apiClient.post('/settings/app', settings)
   return res.data
