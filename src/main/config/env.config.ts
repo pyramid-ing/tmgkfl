@@ -31,7 +31,7 @@ export class EnvConfig {
     // 로거 초기화
     LoggerConfig.initialize()
 
-    process.env.PUPPETEER_EXECUTABLE_PATH = this.getDefaultChromePath()
+    process.env.PLAYWRIGHT_BROWSERS_PATH = this.getDefaultChromePath()
 
     this.setupEngineNames()
     if (this.isPackaged) {
