@@ -159,23 +159,17 @@ export class WorkflowService {
     await page.waitForTimeout(3000)
     await page.keyboard.insertText(content)
     await page.waitForTimeout(3000)
-    const subjectInput = await page.$('input')
-    if (subjectInput) {
-      await subjectInput.fill(subject)
+    // const subjectInput = await page.$('input')
+    // if (subjectInput) {
+    //   await subjectInput.fill(subject)
+    // } else {
+    //   throw new Error('게시글 제목 입력 필드 찾을 수 없음')
+    // }
+    const postButton = page.getByRole('button').filter({hasText: '게시'})
+    const isProcess = await postButton.count() > 0
+    if (isProcess) {
+      await postButton.click()
     } else {
-      throw new Error('게시글 제목 입력 필드 찾을 수 없음')
-    }
-    const buttons = await page.$$('div.__fb-light-mode div[role="button"][tabindex="0"]')
-    let isProcess = false
-    for (const button of buttons) {
-      const buttonText = await button.textContent()
-      if (buttonText?.includes('게시')) {
-        isProcess = true
-        await button.click()
-        break
-      }
-    }
-    if (!isProcess) {
       throw new Error('게시글 게시 버튼 찾을 수 없음')
     }
     await page.waitForTimeout(5000)
