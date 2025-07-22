@@ -18,7 +18,6 @@ const StyledHeader = styled(Header)`
 const AppHeader: React.FC = () => {
   return (
     <StyledHeader>
-      <Logo>{LOGO_TEXT}</Logo>
     </StyledHeader>
   )
 }

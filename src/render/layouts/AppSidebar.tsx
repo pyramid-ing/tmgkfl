@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import UpdateManager from '../components/UpdateManager'
+import { LOGO_TEXT } from '../utils/title'
 
 const { Sider } = Layout
 
@@ -121,7 +122,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <Sider width={200} style={{ position: 'relative' }}>
-      <Logo>윈소프트 Threads 자동화 봇</Logo>
+      <Logo>{LOGO_TEXT}</Logo>
       <Menu
         theme="dark"
         selectedKeys={[getSelectedKey()]}
