@@ -165,8 +165,8 @@ export class WorkflowService {
     // } else {
     //   throw new Error('게시글 제목 입력 필드 찾을 수 없음')
     // }
-    const postButton = page.getByRole('button').filter({hasText: '게시'})
-    const isProcess = await postButton.count() > 0
+    const postButton = page.getByRole('button').filter({ hasText: '게시' })
+    const isProcess = (await postButton.count()) > 0
     if (isProcess) {
       await postButton.click()
     } else {
