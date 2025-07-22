@@ -1,6 +1,9 @@
 // 기본 앱 제목
 export const APP_TITLE = '윈소프트 Threads 자동화 봇'
 
+// 로고 텍스트
+export const LOGO_TEXT = '윈소프트 Threads 자동화 봇'
+
 // 페이지별 제목
 export const PAGE_TITLES = {
   HOME: '홈',

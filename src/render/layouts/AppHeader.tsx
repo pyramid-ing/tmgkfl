@@ -1,6 +1,8 @@
 import { Layout } from 'antd'
 import React from 'react'
 import styled from 'styled-components'
+import Logo from '../components/shared/Logo'
+import { LOGO_TEXT } from '../utils/title'
 
 const { Header } = Layout
 
@@ -14,7 +16,11 @@ const StyledHeader = styled(Header)`
 `
 
 const AppHeader: React.FC = () => {
-  return <StyledHeader></StyledHeader>
+  return (
+    <StyledHeader>
+      <Logo>{LOGO_TEXT}</Logo>
+    </StyledHeader>
+  )
 }
 
 export default AppHeader
