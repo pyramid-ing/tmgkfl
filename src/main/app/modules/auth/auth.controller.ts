@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common'
-import { AuthService } from './auth.service';
+import { AuthService } from './auth.service'
 
 @Controller('/auth')
 export class AuthController {
@@ -7,9 +7,9 @@ export class AuthController {
 
   @Get('/machine-id')
   async getMachineId() {
-   const machineId = await this.authService.getMachineId()
-   return {
-      machineId
-   }
+    const machineId = await this.authService.getMachineId()
+    return {
+      machineId,
+    }
   }
 }

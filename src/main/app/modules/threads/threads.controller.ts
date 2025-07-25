@@ -1,8 +1,8 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common'
 import { randomUUID } from 'crypto'
+import { AuthGuard, Permissions } from '../auth/auth.guard'
 import { ThreadsFollowDto } from './dto/threads-follow.dto'
 import { ThreadsService } from './threads.service'
-import { AuthGuard, Permissions } from '../auth/auth.guard'
 
 @Controller('/threads')
 export class ThreadsController {

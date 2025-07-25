@@ -8,13 +8,13 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ children, className, style }) => {
   return (
-    <div 
+    <div
       className={className}
       style={{
         fontSize: '18px',
         fontWeight: 'bold',
         color: '#1890ff',
-        ...style
+        ...style,
       }}
     >
       {children}
@@ -22,4 +22,4 @@ const Logo: React.FC<LogoProps> = ({ children, className, style }) => {
   )
 }
 
-export default Logo 
+export default Logo

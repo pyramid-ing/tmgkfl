@@ -1,6 +1,6 @@
 import { SettingOutlined, ThunderboltOutlined, UploadOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import UpdateManager from '../components/UpdateManager'

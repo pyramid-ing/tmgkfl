@@ -1,10 +1,8 @@
 import { Layout } from 'antd'
-import React, { useCallback, useEffect } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import Card from 'antd/es/card/Card'
 import AppHeader from './AppHeader'
 import AppSidebar from './AppSidebar'
-import { apiClient } from '@render/api'
 
 const { Content } = Layout
 
@@ -33,7 +31,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <AppSidebar />
       <Layout>
         <AppHeader />
-        <StyledContent>{children}</StyledContent>
+        <StyledContent>
+          <NoticeBanner />
+          {children}
+        </StyledContent>
       </Layout>
     </StyledLayout>
   )

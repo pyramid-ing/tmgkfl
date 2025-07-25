@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common'
+import { AuthGuard, Permissions } from '../auth/auth.guard'
 import { PostJobsCreateReqDto } from './dto/post-jobs.create.dto'
 import { PostJobsService } from './post-jobs.service'
-import { AuthGuard, Permissions } from '../auth/auth.guard'
 
 @Controller('/post-jobs')
 export class PostJobsController {

@@ -7,6 +7,7 @@ import { app, BrowserWindow } from 'electron'
 import { join } from 'node:path'
 import { GlobalExceptionFilter } from '../filters/global-exception.filter'
 import customConfig from './config/custom-config'
+import { AuthModule } from './modules/auth/auth.module'
 import { CommonModule } from './modules/common/common.module'
 import { PrismaService } from './modules/common/prisma/prisma.service'
 import { LogsModule } from './modules/logs/logs.module'
@@ -14,7 +15,6 @@ import { PostJobsModule } from './modules/post-jobs/post-jobs.module'
 import { SettingsModule } from './modules/settings/settings.module'
 import { ThreadsModule } from './modules/threads/threads.module'
 import { UtilModule } from './modules/util/util.module'
-import { AuthModule } from './modules/auth/auth.module'
 
 @Module({
   imports: [
