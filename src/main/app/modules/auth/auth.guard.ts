@@ -16,19 +16,22 @@ export interface LicenseRes {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly configService: ConfigService,
-    private readonly reflector: Reflector
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest()
     const keymasterEndpoint = this.configService.get('keymaster.endpoint')
+    const keymasterService = this.configService.get('keymaster.service')
+
     const requiredPermissions = this.reflector.get<string[]>(PERMISSIONS_KEY, context.getHandler()) ?? []
 
     const key = await machineId()
     try {
-      const { data } = await axios.get<LicenseRes>(`${keymasterEndpoint}/auth/${process.env.SERVICE}/check-license`, {
-        params: { key }
+      const { data } = await axios.get<LicenseRes>(`${keymasterEndpoint}/auth/${keymasterService}/check-license`, {
+        params: { key },
       })
       const isValid = requiredPermissions.every(permission => data.license.permissions.includes(permission))
       if (isValid) {
