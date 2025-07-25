@@ -1,13 +1,16 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Post, UseGuards } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import { ThreadsFollowDto } from './dto/threads-follow.dto'
 import { ThreadsService } from './threads.service'
+import { AuthGuard, Permissions } from '../auth/auth.guard'
 
 @Controller('/threads')
 export class ThreadsController {
   constructor(private readonly threadsService: ThreadsService) {}
 
   @Post('/start')
+  @UseGuards(AuthGuard)
+  @Permissions('tmgkfl')
   async startAutomation(
     @Body()
     ThreadsFollowDto: ThreadsFollowDto,

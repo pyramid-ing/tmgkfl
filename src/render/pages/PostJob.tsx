@@ -151,7 +151,7 @@ const PostJobPage: React.FC = () => {
       fetchPostJobs() // 작업 목록 새로고침
     } catch (error) {
       console.error('Error posting data:', error)
-      message.error('게시글을 예약하는 중 오류가 발생했습니다.')
+      message.error(error.response.data.message ?? '게시글을 예약하는 중 오류가 발생했습니다.')
     }
   }
 

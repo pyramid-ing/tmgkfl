@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common'
 import { PostJobsCreateReqDto } from './dto/post-jobs.create.dto'
 import { PostJobsService } from './post-jobs.service'
+import { AuthGuard, Permissions } from '../auth/auth.guard'
 
 @Controller('/post-jobs')
 export class PostJobsController {
@@ -13,16 +14,20 @@ export class PostJobsController {
     }
   }
 
+  @UseGuards(AuthGuard)
+  @Permissions('posting')
   @Post('/')
   async create(@Body() postJobsCreateReqDto: PostJobsCreateReqDto) {
     return this.postJobsService.createPostJobs(postJobsCreateReqDto)
   }
-
+  @UseGuards(AuthGuard)
+  @Permissions('posting')
   @Delete('/:id')
   async delete(@Param('id') id: number) {
     return this.postJobsService.deletePostJob(id)
   }
-
+  @UseGuards(AuthGuard)
+  @Permissions('posting')
   @Post('/:id/retry')
   async retry(@Param('id') id: number) {
     return this.postJobsService.retryPostJob(id)

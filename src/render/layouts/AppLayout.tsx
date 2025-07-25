@@ -1,8 +1,10 @@
 import { Layout } from 'antd'
-import React from 'react'
+import React, { useCallback, useEffect } from 'react'
 import styled from 'styled-components'
+import Card from 'antd/es/card/Card'
 import AppHeader from './AppHeader'
 import AppSidebar from './AppSidebar'
+import { apiClient } from '@render/api'
 
 const { Content } = Layout
 
