@@ -1,3 +1,4 @@
+import NoticeBanner from '@render/components/shared/NoticeBanner'
 import { Layout } from 'antd'
 import React from 'react'
 import styled from 'styled-components'
