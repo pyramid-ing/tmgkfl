@@ -86,13 +86,23 @@ const ThreadsPage: React.FC = () => {
         }
         centered
       >
-        <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ followMessages: [''] }}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          initialValues={{
+            followMessages: [''],
+            minDelay: 50,
+            maxDelay: 80,
+            maxCount: 50,
+          }}
+        >
           <Form.Item
             name="id"
             label="인스타그램 ID"
             rules={[{ required: true, message: '인스타그램 ID를 입력해주세요.' }]}
           >
-            <Input />
+            <Input.Password />
           </Form.Item>
           <Form.Item name="password" label="비밀번호" rules={[{ required: true, message: '비밀번호를 입력해주세요.' }]}>
             <Input.Password />
@@ -123,7 +133,7 @@ const ThreadsPage: React.FC = () => {
                 marginRight: '16px',
               }}
             >
-              <InputNumber min={1} max={60} placeholder="최소 딜레이" style={{ width: '100%' }} />
+              <InputNumber min={0} max={9999} placeholder="최소 딜레이" style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item
               name="maxDelay"
@@ -140,7 +150,7 @@ const ThreadsPage: React.FC = () => {
               ]}
               style={{ display: 'inline-block', width: 'calc(50% - 8px)' }}
             >
-              <InputNumber min={1} max={60} placeholder="최대 딜레이" style={{ width: '100%' }} />
+              <InputNumber min={0} max={9999} placeholder="최대 딜레이" style={{ width: '100%' }} />
             </Form.Item>
           </Form.Item>
 
@@ -154,7 +164,7 @@ const ThreadsPage: React.FC = () => {
               },
             ]}
           >
-            <InputNumber min={1} max={999} style={{ width: '100%' }} />
+            <InputNumber min={1} max={9999} style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.List name="followMessages">
