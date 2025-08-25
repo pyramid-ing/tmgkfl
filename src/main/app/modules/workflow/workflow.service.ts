@@ -8,6 +8,47 @@ export interface LoginParams {
 
 @Injectable()
 export class WorkflowService {
+  // 패널이 나타났는지 확인하고 백드롭을 클릭해서 닫는 유틸리티 함수
+  private async closeModalIfPresent(page: Page) {
+    try {
+      // 여러 가능한 패널 선택자들
+      const panelSelectors = ['div[role="dialog"]']
+
+      // 백드롭 선택자들
+      const backdropSelectors = [
+        'div.x1ey2m1c.xtijo5x.x1o0tod.xixxii4.x13vifvy.x5hsz1j.x1u6grsq.xqcmdr3.x4hg4is.xwv1ft4',
+      ]
+
+      // 패널이 있는지 확인
+      let panelFound = false
+      for (const selector of panelSelectors) {
+        const panel = await page.$(selector)
+        if (panel) {
+          panelFound = true
+          break
+        }
+      }
+
+      if (panelFound) {
+        // 백드롭을 찾아서 클릭
+        for (const selector of backdropSelectors) {
+          const backdrop = await page.$(selector)
+          if (backdrop) {
+            await backdrop.click()
+            await page.waitForTimeout(1000)
+            break
+          }
+        }
+
+        // ESC 키로도 닫기 시도
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(500)
+      }
+    } catch (error) {
+      // 에러가 발생해도 계속 진행
+      console.log('패널 닫기 중 에러 발생:', error.message)
+    }
+  }
   async launch(headless: boolean) {
     const browser = await chromium.launch({
       headless,
@@ -79,6 +120,10 @@ export class WorkflowService {
     } else {
       await button.click()
       await page.waitForTimeout(3000)
+
+      // 패널이 나타나면 닫기
+      await this.closeModalIfPresent(page)
+
       const followButton = await page.$('div.__fb-light-mode div[role="button"]')
       if (followButton) {
         await followButton.click()
@@ -93,6 +138,10 @@ export class WorkflowService {
       throw new Error('이미 좋아요 완료')
     } else {
       await likeButton.click()
+      await page.waitForTimeout(1000)
+
+      // 패널이 나타나면 닫기
+      await this.closeModalIfPresent(page)
     }
   }
 
@@ -103,6 +152,10 @@ export class WorkflowService {
     } else {
       await repostButton.click()
       await page.waitForTimeout(3000)
+
+      // 패널이 나타나면 닫기
+      await this.closeModalIfPresent(page)
+
       const listButtons = await page.$$('div.__fb-light-mode span')
       let isProcess = false
       for (const listButton of listButtons) {
@@ -127,6 +180,10 @@ export class WorkflowService {
     } else {
       await commentButton.click()
       await page.waitForTimeout(3000)
+
+      // 패널이 나타나면 닫기
+      await this.closeModalIfPresent(page)
+
       await page.keyboard.insertText(followMessage)
       await page.waitForTimeout(1000)
       const buttons = await page.$$('div.__fb-light-mode div[role="button"]')
