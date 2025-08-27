@@ -34,15 +34,13 @@ export class WorkflowService {
         for (const selector of backdropSelectors) {
           const backdrop = await page.$(selector)
           if (backdrop) {
-            await backdrop.click()
+            // ESC 키로도 닫기 시도
+            await page.keyboard.press('Escape')
+            // await backdrop.click()
             await page.waitForTimeout(1000)
             break
           }
         }
-
-        // ESC 키로도 닫기 시도
-        await page.keyboard.press('Escape')
-        await page.waitForTimeout(500)
       }
     } catch (error) {
       // 에러가 발생해도 계속 진행
@@ -114,15 +112,15 @@ export class WorkflowService {
   }
 
   async followArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
+    // 패널이 나타나면 닫기
+    await this.closeModalIfPresent(page)
+
     const button = await article.$('svg[aria-label="팔로우"]')
     if (!button) {
       throw new Error('이미 팔로우 된 사용자')
     } else {
       await button.click()
       await page.waitForTimeout(3000)
-
-      // 패널이 나타나면 닫기
-      await this.closeModalIfPresent(page)
 
       const followButton = await page.$('div.__fb-light-mode div[role="button"]')
       if (followButton) {
@@ -133,28 +131,28 @@ export class WorkflowService {
   }
 
   async likeArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
+    // 패널이 나타나면 닫기
+    await this.closeModalIfPresent(page)
+
     const likeButton = await article.$('svg[aria-label="좋아요"]')
     if (!likeButton) {
       throw new Error('이미 좋아요 완료')
     } else {
       await likeButton.click()
       await page.waitForTimeout(1000)
-
-      // 패널이 나타나면 닫기
-      await this.closeModalIfPresent(page)
     }
   }
 
   async repostArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
+    // 패널이 나타나면 닫기
+    await this.closeModalIfPresent(page)
+
     const repostButton = await article.$('svg[aria-label="리포스트"]')
     if (!repostButton) {
       throw new Error('리포스트 버튼 찾을 수 없음')
     } else {
       await repostButton.click()
       await page.waitForTimeout(3000)
-
-      // 패널이 나타나면 닫기
-      await this.closeModalIfPresent(page)
 
       const listButtons = await page.$$('div.__fb-light-mode span')
       let isProcess = false
@@ -168,21 +166,23 @@ export class WorkflowService {
         }
       }
       if (!isProcess) {
+        // 이미 리포스트 완료인 경우에도 패널을 닫고 에러 던지기
+        await this.closeModalIfPresent(page)
         throw new Error('이미 리포스트 완료')
       }
     }
   }
 
   async commentArticle(page: Page, article: ElementHandle<HTMLDivElement>, followMessage: string) {
+    // 패널이 나타나면 닫기
+    await this.closeModalIfPresent(page)
+
     const commentButton = await article.$('svg[aria-label="답글"]')
     if (!commentButton) {
       throw new Error('댓글 버튼 찾을 수 없음')
     } else {
       await commentButton.click()
       await page.waitForTimeout(3000)
-
-      // 패널이 나타나면 닫기
-      await this.closeModalIfPresent(page)
 
       await page.keyboard.insertText(followMessage)
       await page.waitForTimeout(1000)
