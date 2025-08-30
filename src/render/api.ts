@@ -7,7 +7,7 @@ import type { AppSettings } from './types/settings'
 import axios from 'axios'
 
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:3554',
+  baseURL: 'http://localhost:3553',
 })
 
 // 에러 코드 enum

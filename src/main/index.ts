@@ -240,9 +240,9 @@ async function bootstrap() {
     // Support 10mb csv/json files for importing activities
     app.use(bodyParser.json({ limit: '10mb' }))
 
-    await app.listen(3554)
+    await app.listen(3553)
 
-    console.log('NestJS HTTP server is running on port 3554')
+    console.log('NestJS HTTP server is running on port')
   } catch (error) {
     console.log(error)
     app.quit()
