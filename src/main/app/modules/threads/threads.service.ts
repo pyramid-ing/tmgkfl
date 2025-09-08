@@ -170,11 +170,12 @@ export class ThreadsService {
                     this.logging(jobId, `멘트가 없어 댓글을 작성하지 않습니다.`)
                     await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
                   } else {
-                    const canComment = await this.workflowService.canComment(
+                    // 좋아요가 이미 되어있으면 댓글도 무시
+                    const isAlreadyLiked = await this.workflowService.isAlreadyLiked(
                       article as unknown as ElementHandle<HTMLDivElement>,
                     )
-                    if (!canComment) {
-                      this.logging(jobId, `${articleText} 댓글 버튼을 찾을 수 없음 - 스킵`)
+                    if (isAlreadyLiked) {
+                      this.logging(jobId, `${articleText} 이미 좋아요된 게시물 - 댓글도 스킵`)
                     } else {
                       this.logging(jobId, `${articleText} 댓글을 시도합니다`)
                       try {

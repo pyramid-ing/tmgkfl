@@ -209,11 +209,6 @@ export class WorkflowService {
     }
   }
 
-  async canComment(article: ElementHandle<HTMLDivElement>): Promise<boolean> {
-    const commentButton = await article.$('svg[aria-label="답글"]')
-    return !!commentButton // 댓글 버튼이 있으면 댓글 가능
-  }
-
   async commentArticle(page: Page, article: ElementHandle<HTMLDivElement>, followMessage: string) {
     // 패널이 나타나면 닫기
     await this.closeModalIfPresent(page)
