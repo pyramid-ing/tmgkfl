@@ -103,72 +103,85 @@ export class ThreadsService {
             this.logging(jobId, `${articleText} 게시물을 처리합니다. (${processedArticles.size} / ${maxCount})`)
 
             if (followAction) {
-              this.logging(jobId, `${articleText} 팔로우를 시도합니다`)
-              try {
-                await this.workflowService.followArticle(page, article as unknown as ElementHandle<HTMLDivElement>)
-                this.logging(jobId, `${articleText} 팔로우 성공`)
-                await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
-              } catch (err) {
-                this.logging(jobId, `${articleText} 팔로우 결과: ${err.message}`)
-                // 이미 팔로우된 경우 딜레이 스킵
-                if (err.message.includes('이미 팔로우')) {
-                  this.logging(jobId, `${articleText} 이미 팔로우된 사용자 - 딜레이 스킵`)
-                } else {
+              const isAlreadyFollowed = await this.workflowService.isAlreadyFollowed(
+                article as unknown as ElementHandle<HTMLDivElement>,
+              )
+              if (isAlreadyFollowed) {
+                this.logging(jobId, `${articleText} 이미 팔로우된 사용자 - 스킵`)
+              } else {
+                this.logging(jobId, `${articleText} 팔로우를 시도합니다`)
+                try {
+                  await this.workflowService.followArticle(page, article as unknown as ElementHandle<HTMLDivElement>)
+                  this.logging(jobId, `${articleText} 팔로우 성공`)
+                  await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                } catch (err) {
+                  this.logging(jobId, `${articleText} 팔로우 결과: ${err.message}`)
                   await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
                 }
               }
             }
             if (likeAction) {
-              this.logging(jobId, `${articleText} 좋아요를 시도합니다`)
-              try {
-                await this.workflowService.likeArticle(page, article as unknown as ElementHandle<HTMLDivElement>)
-                this.logging(jobId, `${articleText} 좋아요 성공`)
-                await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
-              } catch (err) {
-                this.logging(jobId, `${articleText} 좋아요 결과: ${err.message}`)
-                // 이미 좋아요된 경우 딜레이 스킵
-                if (err.message.includes('이미 좋아요 완료')) {
-                  this.logging(jobId, `${articleText} 이미 좋아요된 게시물 - 딜레이 스킵`)
-                } else {
+              const isAlreadyLiked = await this.workflowService.isAlreadyLiked(
+                article as unknown as ElementHandle<HTMLDivElement>,
+              )
+              if (isAlreadyLiked) {
+                this.logging(jobId, `${articleText} 이미 좋아요된 게시물 - 스킵`)
+              } else {
+                this.logging(jobId, `${articleText} 좋아요를 시도합니다`)
+                try {
+                  await this.workflowService.likeArticle(page, article as unknown as ElementHandle<HTMLDivElement>)
+                  this.logging(jobId, `${articleText} 좋아요 성공`)
+                  await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                } catch (err) {
+                  this.logging(jobId, `${articleText} 좋아요 결과: ${err.message}`)
                   await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
                 }
               }
             }
             if (repostAction) {
-              try {
+              const isAlreadyReposted = await this.workflowService.isAlreadyReposted(
+                page,
+                article as unknown as ElementHandle<HTMLDivElement>,
+              )
+              if (isAlreadyReposted) {
+                this.logging(jobId, `${articleText} 이미 리포스트된 게시물 - 스킵`)
+              } else {
                 this.logging(jobId, `${articleText} 리포스트를 시도합니다`)
-                await this.workflowService.repostArticle(page, article as unknown as ElementHandle<HTMLDivElement>)
-                this.logging(jobId, `${articleText} 리포스트 성공`)
-                await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
-              } catch (err) {
-                this.logging(jobId, `${articleText} 리포스트 결과: ${err.message}`)
-                // 이미 리포스트된 경우 딜레이 스킵
-                if (err.message.includes('이미 리포스트 완료')) {
-                  this.logging(jobId, `${articleText} 이미 리포스트된 게시물 - 딜레이 스킵`)
-                } else {
+                try {
+                  await this.workflowService.repostArticle(page, article as unknown as ElementHandle<HTMLDivElement>)
+                  this.logging(jobId, `${articleText} 리포스트 성공`)
+                  await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                } catch (err) {
+                  this.logging(jobId, `${articleText} 리포스트 결과: ${err.message}`)
                   await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
                 }
               }
             }
             if (commentAction) {
-              this.logging(jobId, `${articleText} 댓글을 시도합니다`)
               const filteredFollowMessages = followMessages.filter(message => message.trim() !== '')
               if (filteredFollowMessages.length === 0) {
                 this.logging(jobId, `멘트가 없어 댓글을 작성하지 않습니다.`)
                 await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
               } else {
-                try {
-                  await this.workflowService.commentArticle(
-                    page,
-                    article as unknown as ElementHandle<HTMLDivElement>,
-                    shuffle(filteredFollowMessages)[0],
-                  )
-                  this.logging(jobId, `${articleText} 댓글 성공`)
-                  await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
-                } catch (err) {
-                  this.logging(jobId, `${articleText} 댓글 결과: ${err.message}`)
-                  // 댓글 관련 오류의 경우에도 딜레이 적용 (댓글은 중복 체크가 어려움)
-                  await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                const canComment = await this.workflowService.canComment(
+                  article as unknown as ElementHandle<HTMLDivElement>,
+                )
+                if (!canComment) {
+                  this.logging(jobId, `${articleText} 댓글 버튼을 찾을 수 없음 - 스킵`)
+                } else {
+                  this.logging(jobId, `${articleText} 댓글을 시도합니다`)
+                  try {
+                    await this.workflowService.commentArticle(
+                      page,
+                      article as unknown as ElementHandle<HTMLDivElement>,
+                      shuffle(filteredFollowMessages)[0],
+                    )
+                    this.logging(jobId, `${articleText} 댓글 성공`)
+                    await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                  } catch (err) {
+                    this.logging(jobId, `${articleText} 댓글 결과: ${err.message}`)
+                    await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                  }
                 }
               }
             }

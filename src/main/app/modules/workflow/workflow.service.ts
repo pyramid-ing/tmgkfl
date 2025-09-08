@@ -111,6 +111,11 @@ export class WorkflowService {
     await page.waitForSelector(articleSelector, { timeout: 30000 })
   }
 
+  async isAlreadyFollowed(article: ElementHandle<HTMLDivElement>): Promise<boolean> {
+    const button = await article.$('svg[aria-label="팔로우"]')
+    return !button // 팔로우 버튼이 없으면 이미 팔로우된 상태
+  }
+
   async followArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
     // 패널이 나타나면 닫기
     await this.closeModalIfPresent(page)
@@ -130,6 +135,11 @@ export class WorkflowService {
     }
   }
 
+  async isAlreadyLiked(article: ElementHandle<HTMLDivElement>): Promise<boolean> {
+    const likeButton = await article.$('svg[aria-label="좋아요"]')
+    return !likeButton // 좋아요 버튼이 없으면 이미 좋아요된 상태
+  }
+
   async likeArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
     // 패널이 나타나면 닫기
     await this.closeModalIfPresent(page)
@@ -141,6 +151,32 @@ export class WorkflowService {
       await likeButton.click()
       await page.waitForTimeout(1000)
     }
+  }
+
+  async isAlreadyReposted(page: Page, article: ElementHandle<HTMLDivElement>): Promise<boolean> {
+    const repostButton = await article.$('svg[aria-label="리포스트"]')
+    if (!repostButton) {
+      return true // 리포스트 버튼이 없으면 이미 리포스트된 상태
+    }
+
+    // 리포스트 버튼을 클릭해서 패널을 열어보고 확인
+    await repostButton.click()
+    await page.waitForTimeout(3000)
+
+    const listButtons = await page.$$('div.__fb-light-mode span')
+    let isAlreadyReposted = true
+
+    for (const listButton of listButtons) {
+      const listButtonText = await listButton.textContent()
+      if (listButtonText?.includes('리포스트')) {
+        isAlreadyReposted = false
+        break
+      }
+    }
+
+    // 패널 닫기
+    await this.closeModalIfPresent(page)
+    return isAlreadyReposted
   }
 
   async repostArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
@@ -171,6 +207,11 @@ export class WorkflowService {
         throw new Error('이미 리포스트 완료')
       }
     }
+  }
+
+  async canComment(article: ElementHandle<HTMLDivElement>): Promise<boolean> {
+    const commentButton = await article.$('svg[aria-label="답글"]')
+    return !!commentButton // 댓글 버튼이 있으면 댓글 가능
   }
 
   async commentArticle(page: Page, article: ElementHandle<HTMLDivElement>, followMessage: string) {
