@@ -143,6 +143,14 @@ export class ThreadsService {
                 }
 
                 // 1. 댓글 액션 (가장 먼저)
+                /**
+                 * ⚠️ WARNING: 댓글 단독 처리 방지
+                 *
+                 * 댓글은 DOM에서 이미 처리되었는지 확인할 수 있는 방법이 없어서
+                 * 단독으로 처리할 수 없습니다. 다른 액션과 함께 사용해야 합니다.
+                 *
+                 * 처리 순서: 댓글 → 팔로우 → 좋아요 → 리포스트
+                 */
                 if (commentAction) {
                   const filteredFollowMessages = followMessages.filter(message => message.trim() !== '')
                   if (filteredFollowMessages.length === 0) {

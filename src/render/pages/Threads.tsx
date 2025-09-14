@@ -52,7 +52,11 @@ const ThreadsPage: React.FC = () => {
     // ⚠️ 댓글 단독 처리 방지: 댓글은 확인 방법이 없어서 단독으로 처리할 수 없습니다.
     // 리포스트, 좋아요, 팔로우 중 최소 1개와 함께 사용해야 합니다.
     if (values.commentAction && !values.followAction && !values.likeAction && !values.repostAction) {
-      message.error('댓글은 팔로우, 좋아요, 리포스트 중 최소 1개와 함께 사용해야 합니다.')
+      message.error({
+        content:
+          '댓글은 팔로우, 좋아요, 리포스트 중 최소 1개와 함께 사용해야 합니다.\n\n댓글은 이미 처리된 게시물을 확인할 수 없어 중복 처리 방지를 위해 다른 액션과 함께 사용해야 합니다.',
+        duration: 8,
+      })
       return
     }
     setLoading(true)
@@ -224,12 +228,7 @@ const ThreadsPage: React.FC = () => {
               <Checkbox>리포스트</Checkbox>
             </Form.Item>
             <Form.Item name="commentAction" valuePropName="checked" noStyle>
-              <Checkbox>
-                댓글
-                <span style={{ color: '#ff4d4f', fontSize: '12px', marginLeft: '8px' }}>
-                  ⚠️ 다른 액션과 함께 사용 필요
-                </span>
-              </Checkbox>
+              <Checkbox>댓글</Checkbox>
             </Form.Item>
           </Form.Item>
           <Form.Item>
