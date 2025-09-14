@@ -103,6 +103,69 @@ export class ThreadsService {
                 const articleText = `[${descText?.slice(0, 20)}...]`
                 this.logging(jobId, `${articleText} 게시물을 처리합니다. (${processedArticles.size} / ${maxCount})`)
 
+                // 먼저 모든 액션의 상태를 확인하여 이미 처리된 게시물인지 판단
+                let isAlreadyProcessed = false
+
+                if (followAction) {
+                  const isAlreadyFollowed = await this.workflowService.isAlreadyFollowed(
+                    article as unknown as ElementHandle<HTMLDivElement>,
+                  )
+                  if (isAlreadyFollowed) {
+                    isAlreadyProcessed = true
+                  }
+                }
+
+                if (likeAction && !isAlreadyProcessed) {
+                  const isAlreadyLiked = await this.workflowService.isAlreadyLiked(
+                    article as unknown as ElementHandle<HTMLDivElement>,
+                  )
+                  if (isAlreadyLiked) {
+                    isAlreadyProcessed = true
+                  }
+                }
+
+                if (repostAction && !isAlreadyProcessed) {
+                  const isAlreadyReposted = await this.workflowService.isAlreadyReposted(
+                    page,
+                    article as unknown as ElementHandle<HTMLDivElement>,
+                  )
+                  if (isAlreadyReposted) {
+                    isAlreadyProcessed = true
+                  }
+                }
+
+                // 이미 처리된 게시물이면 스킵
+                if (isAlreadyProcessed) {
+                  this.logging(jobId, `${articleText} 이미 처리된 게시물 - 전체 스킵`)
+                  processedArticles.add(articlaHash)
+                  processedInThisRound++
+                  continue
+                }
+
+                // 1. 댓글 액션 (가장 먼저)
+                if (commentAction) {
+                  const filteredFollowMessages = followMessages.filter(message => message.trim() !== '')
+                  if (filteredFollowMessages.length === 0) {
+                    this.logging(jobId, `멘트가 없어 댓글을 작성하지 않습니다.`)
+                    await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                  } else {
+                    this.logging(jobId, `${articleText} 댓글을 시도합니다`)
+                    try {
+                      await this.workflowService.commentArticle(
+                        page,
+                        article as unknown as ElementHandle<HTMLDivElement>,
+                        shuffle(filteredFollowMessages)[0],
+                      )
+                      this.logging(jobId, `${articleText} 댓글 성공`)
+                      await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                    } catch (err) {
+                      this.logging(jobId, `${articleText} 댓글 결과: ${err.message}`)
+                      await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
+                    }
+                  }
+                }
+
+                // 2. 팔로우 액션
                 if (followAction) {
                   const isAlreadyFollowed = await this.workflowService.isAlreadyFollowed(
                     article as unknown as ElementHandle<HTMLDivElement>,
@@ -124,10 +187,13 @@ export class ThreadsService {
                     }
                   }
                 }
+
+                // 3. 좋아요 액션
                 if (likeAction) {
                   const isAlreadyLiked = await this.workflowService.isAlreadyLiked(
                     article as unknown as ElementHandle<HTMLDivElement>,
                   )
+
                   if (isAlreadyLiked) {
                     this.logging(jobId, `${articleText} 이미 좋아요된 게시물 - 스킵`)
                   } else {
@@ -142,6 +208,8 @@ export class ThreadsService {
                     }
                   }
                 }
+
+                // 4. 리포스트 액션
                 if (repostAction) {
                   const isAlreadyReposted = await this.workflowService.isAlreadyReposted(
                     page,
@@ -161,35 +229,6 @@ export class ThreadsService {
                     } catch (err) {
                       this.logging(jobId, `${articleText} 리포스트 결과: ${err.message}`)
                       await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
-                    }
-                  }
-                }
-                if (commentAction) {
-                  const filteredFollowMessages = followMessages.filter(message => message.trim() !== '')
-                  if (filteredFollowMessages.length === 0) {
-                    this.logging(jobId, `멘트가 없어 댓글을 작성하지 않습니다.`)
-                    await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
-                  } else {
-                    // 좋아요가 이미 되어있으면 댓글도 무시
-                    const isAlreadyLiked = await this.workflowService.isAlreadyLiked(
-                      article as unknown as ElementHandle<HTMLDivElement>,
-                    )
-                    if (isAlreadyLiked) {
-                      this.logging(jobId, `${articleText} 이미 좋아요된 게시물 - 댓글도 스킵`)
-                    } else {
-                      this.logging(jobId, `${articleText} 댓글을 시도합니다`)
-                      try {
-                        await this.workflowService.commentArticle(
-                          page,
-                          article as unknown as ElementHandle<HTMLDivElement>,
-                          shuffle(filteredFollowMessages)[0],
-                        )
-                        this.logging(jobId, `${articleText} 댓글 성공`)
-                        await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
-                      } catch (err) {
-                        this.logging(jobId, `${articleText} 댓글 결과: ${err.message}`)
-                        await page.waitForTimeout(this.getRandomDelay(minDelay, maxDelay) * 1000)
-                      }
                     }
                   }
                 }
