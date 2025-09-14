@@ -250,6 +250,13 @@ export class ThreadsService {
             this.logging(jobId, '자동화 작업이 성공적으로 완료되었습니다.')
             await browser.close()
           } catch (error: any) {
+            // 브라우저가 종료된 경우 재시작하지 않고 작업 종료
+            if (error.message.includes('Target page, context or browser has been closed')) {
+              this.logging(jobId, '브라우저가 종료되었습니다. 작업을 중단합니다.')
+              this.logging(jobId, `최종 처리된 게시물 수: ${processedArticles.size}`)
+              return
+            }
+
             // 브라우저 정리
             try {
               if (browser) {
@@ -267,13 +274,6 @@ export class ThreadsService {
       )
     } catch (error: any) {
       console.error(error)
-
-      // 브라우저가 종료된 경우 재시작하지 않고 작업 종료
-      if (error.message.includes('Target page, context or browser has been closed')) {
-        this.logging(jobId, '브라우저가 종료되었습니다. 작업을 중단합니다.')
-        this.logging(jobId, `최종 처리된 게시물 수: ${processedArticles.size}`)
-        return
-      }
 
       this.logging(jobId, `최대 재시도 횟수(10회)에 도달했습니다. 작업을 중단합니다.`)
       this.logging(jobId, `최종 처리된 게시물 수: ${processedArticles.size}`)
