@@ -6,6 +6,13 @@ export interface LoginParams {
   pw: string
 }
 
+export class ChromeNotInstalledError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ChromeNotInstalledError'
+  }
+}
+
 @Injectable()
 export class WorkflowService {
   // 패널이 나타났는지 확인하고 백드롭을 클릭해서 닫는 유틸리티 함수
@@ -47,24 +54,33 @@ export class WorkflowService {
       console.log('패널 닫기 중 에러 발생:', error.message)
     }
   }
+
   async launch(headless: boolean) {
-    const browser = await chromium.launch({
-      headless,
-      executablePath: process.env.PLAYWRIGHT_BROWSERS_PATH,
-    })
+    try {
+      const browser = await chromium.launch({
+        headless,
+        executablePath: process.env.PLAYWRIGHT_BROWSERS_PATH,
+      })
 
-    const context = await browser.newContext({
-      viewport: { width: 393, height: 852 },
-      userAgent:
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-    })
-    // 세션 스토리지 초기화
-    await context.addInitScript(() => {
-      window.sessionStorage.clear()
-      window.sessionStorage.setItem('barcelona_mobile_upsell_state', '1')
-    })
+      const context = await browser.newContext({
+        viewport: { width: 393, height: 852 },
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      })
+      // 세션 스토리지 초기화
+      await context.addInitScript(() => {
+        window.sessionStorage.clear()
+        window.sessionStorage.setItem('barcelona_mobile_upsell_state', '1')
+      })
 
-    return { browser, context }
+      return { browser, context }
+    } catch (error) {
+      // Playwright 브라우저 설치 관련 에러 처리
+      if (error.message.includes("Executable doesn't exist")) {
+        throw new ChromeNotInstalledError('크롬 브라우저가 설치되지 않았습니다. 크롬을 재설치 해주세요.')
+      }
+      throw error
+    }
   }
 
   async login(page: Page, params: LoginParams) {

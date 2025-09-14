@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common'
 import { PostJob } from '@prisma/client'
 import { groupBy } from 'lodash'
 import { BrowserContext } from 'playwright'
-import { WorkflowService } from '../workflow/workflow.service'
+import { ChromeNotInstalledError, WorkflowService } from '../workflow/workflow.service'
 import { PostJobsCreateReqDto } from './dto/post-jobs.create.dto'
 
 @Injectable()
@@ -72,9 +72,32 @@ export class PostJobsService {
 
     const groupedPostJobs = groupBy(postJobs, postJob => postJob.loginId)
     for (const loginId in groupedPostJobs) {
-      const { browser, context } = await this.workflowService.launch(
-        EnvConfig.isPackaged, // background (개발환경에서는 디버깅용으로 비활성화)
-      )
+      let browser, context
+      try {
+        const launchResult = await this.workflowService.launch(
+          EnvConfig.isPackaged, // background (개발환경에서는 디버깅용으로 비활성화)
+        )
+        browser = launchResult.browser
+        context = launchResult.context
+      } catch (error) {
+        if (error instanceof ChromeNotInstalledError) {
+          // 크롬 설치 에러인 경우 모든 작업을 실패로 처리
+          await this.prisma.postJob.updateMany({
+            where: {
+              id: {
+                in: postJobs.map(postJob => postJob.id),
+              },
+            },
+            data: {
+              status: 'failed',
+              resultMsg: 'CHROME_NOT_INSTALLED: ' + error.message,
+            },
+          })
+          return // 크롬 설치 에러는 재시도하지 않고 즉시 종료
+        }
+        throw error // 다른 에러는 그대로 전파
+      }
+
       try {
         const postJobs = groupedPostJobs[loginId]
 
@@ -86,19 +109,37 @@ export class PostJobsService {
         }
       } catch (error) {
         console.error(error)
-        await this.prisma.postJob.updateMany({
-          where: {
-            id: {
-              in: postJobs.map(postJob => postJob.id),
+
+        // 크롬 설치 에러인 경우 특별 처리
+        if (error instanceof ChromeNotInstalledError) {
+          await this.prisma.postJob.updateMany({
+            where: {
+              id: {
+                in: postJobs.map(postJob => postJob.id),
+              },
             },
-          },
-          data: {
-            status: 'failed',
-            resultMsg: error.message,
-          },
-        })
+            data: {
+              status: 'failed',
+              resultMsg: 'CHROME_NOT_INSTALLED: ' + error.message,
+            },
+          })
+        } else {
+          await this.prisma.postJob.updateMany({
+            where: {
+              id: {
+                in: postJobs.map(postJob => postJob.id),
+              },
+            },
+            data: {
+              status: 'failed',
+              resultMsg: error.message,
+            },
+          })
+        }
       } finally {
-        await browser.close()
+        if (browser) {
+          await browser.close()
+        }
       }
     }
   }

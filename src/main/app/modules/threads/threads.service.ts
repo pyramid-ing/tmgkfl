@@ -5,7 +5,7 @@ import { shuffle } from 'lodash'
 import { createHash } from 'node:crypto'
 import { ElementHandle } from 'playwright'
 import { SettingsService } from '../settings/settings.service'
-import { WorkflowService } from '../workflow/workflow.service'
+import { ChromeNotInstalledError, WorkflowService } from '../workflow/workflow.service'
 import { ThreadsFollowDto } from './dto/threads-follow.dto'
 
 @Injectable()
@@ -262,6 +262,11 @@ export class ThreadsService {
             if (error.message.includes('Target page, context or browser has been closed')) {
               this.logging(jobId, '브라우저가 종료되었습니다. 작업을 중단합니다.')
               this.logging(jobId, `최종 처리된 게시물 수: ${processedArticles.size}`)
+              return
+            }
+            // 크롬 설치 에러인 경우 특별 처리
+            if (error instanceof ChromeNotInstalledError) {
+              this.logging(jobId, `크롬 브라우저 설치 에러: ${error.message}`)
               return
             }
 

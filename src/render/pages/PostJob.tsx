@@ -1,5 +1,5 @@
 import { InboxOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons'
-import { apiClient } from '@render/api'
+import { apiClient, getErrorMessage } from '@render/api'
 import PageContainer from '@render/components/shared/PageContainer'
 import type { UploadFile, UploadProps } from 'antd'
 import { Button, Input, message, Space, Table, Tag, Typography, Upload } from 'antd'
@@ -151,7 +151,8 @@ const PostJobPage: React.FC = () => {
       fetchPostJobs() // 작업 목록 새로고침
     } catch (error) {
       console.error('Error posting data:', error)
-      message.error(error.response.data.message ?? '게시글을 예약하는 중 오류가 발생했습니다.')
+      const errorMessage = getErrorMessage(error)
+      message.error(errorMessage)
     }
   }
 
@@ -240,6 +241,12 @@ const PostJobPage: React.FC = () => {
       title: '결과',
       dataIndex: 'resultMsg',
       key: 'resultMsg',
+      render: (text: string) => {
+        if (text && text.startsWith('CHROME_NOT_INSTALLED:')) {
+          return <Tag color="red">크롬 브라우저가 설치되지 않았습니다. 크롬을 설치한 후 다시 시도해주세요.</Tag>
+        }
+        return text || '-'
+      },
     },
     {
       title: '상태',

@@ -1,7 +1,7 @@
 import { MinusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { Button, Checkbox, Form, Input, InputNumber, message, Table } from 'antd'
 import React, { useEffect } from 'react'
-import { apiClient } from '../api'
+import { apiClient, getErrorMessage } from '../api'
 import PageContainer from '../components/shared/PageContainer'
 import { PageTitle } from '../hooks/usePageTitle'
 
@@ -79,7 +79,8 @@ const ThreadsPage: React.FC = () => {
       message.success(data.message)
     } catch (error: any) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(values))
-      message.error(error.response?.data?.message || '자동화 시작에 실패했습니다.')
+      const errorMessage = getErrorMessage(error)
+      message.error(errorMessage)
     } finally {
       setLoading(false)
     }

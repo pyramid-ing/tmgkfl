@@ -1,6 +1,7 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, HttpException, HttpStatus, Post, UseGuards } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import { AuthGuard, Permissions } from '../auth/auth.guard'
+import { ChromeNotInstalledError } from '../workflow/workflow.service'
 import { ThreadsFollowDto } from './dto/threads-follow.dto'
 import { ThreadsService } from './threads.service'
 
@@ -16,7 +17,20 @@ export class ThreadsController {
     ThreadsFollowDto: ThreadsFollowDto,
   ) {
     const jobId = randomUUID()
-    this.threadsService.startAutomation(jobId, ThreadsFollowDto)
-    return { jobId, message: 'Threads 자동화를 시작합니다.' }
+    try {
+      this.threadsService.startAutomation(jobId, ThreadsFollowDto)
+      return { jobId, message: 'Threads 자동화를 시작합니다.' }
+    } catch (error) {
+      if (error instanceof ChromeNotInstalledError) {
+        throw new HttpException(
+          {
+            message: error.message,
+            errorCode: 'CHROME_NOT_INSTALLED',
+          },
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+      throw error
+    }
   }
 }
