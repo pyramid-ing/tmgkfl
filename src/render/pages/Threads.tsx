@@ -1,7 +1,9 @@
 import { MinusCircleOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { Button, Checkbox, Form, Input, InputNumber, message, Table } from 'antd'
 import React, { useEffect } from 'react'
+import { useRecoilState } from 'recoil'
 import { apiClient, getErrorMessage } from '../api'
+import { threadsJobIdState, threadsLogsLoadingState, threadsLogsState } from '../atoms/threadsAtoms'
 import PageContainer from '../components/shared/PageContainer'
 import { PageTitle } from '../hooks/usePageTitle'
 
@@ -10,8 +12,9 @@ const STORAGE_KEY = 'threads-form-data'
 const ThreadsPage: React.FC = () => {
   const [form] = Form.useForm()
   const [loading, setLoading] = React.useState(false)
-  const [jobId, setJobId] = React.useState<string | null>(null)
-  const [logs, setLogs] = React.useState<any[]>([])
+  const [jobId, setJobId] = useRecoilState(threadsJobIdState)
+  const [logs, setLogs] = useRecoilState(threadsLogsState)
+  const [logsLoading, setLogsLoading] = useRecoilState(threadsLogsLoadingState)
 
   useEffect(() => {
     try {
@@ -30,10 +33,13 @@ const ThreadsPage: React.FC = () => {
 
     const fetchLogs = async () => {
       try {
+        setLogsLoading(true)
         const { data } = await apiClient.get(`/logs/${jobId}`)
         setLogs(data.logs ?? [])
       } catch (error) {
         console.error('로그 조회 실패:', error)
+      } finally {
+        setLogsLoading(false)
       }
     }
 
@@ -41,7 +47,7 @@ const ThreadsPage: React.FC = () => {
     const interval = setInterval(fetchLogs, 3000)
 
     return () => clearInterval(interval)
-  }, [jobId])
+  }, [jobId, setLogs, setLogsLoading])
 
   const onFinish = async (values: any) => {
     if (!values.followAction && !values.likeAction && !values.repostAction && !values.commentAction) {
@@ -76,6 +82,8 @@ const ThreadsPage: React.FC = () => {
         maxCount: values.maxCount,
       })
       setJobId(data.jobId)
+      // 새로운 작업 시작 시 이전 로그 초기화
+      setLogs([])
       message.success(data.message)
     } catch (error: any) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(values))
@@ -238,9 +246,11 @@ const ThreadsPage: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-        {logs.length > 0 && (
+        {(logs.length > 0 || logsLoading) && (
           <Table
             dataSource={logs}
+            loading={logsLoading}
+            rowKey={(record, index) => record.id || `log-${index}`}
             columns={[
               {
                 title: '시간',
