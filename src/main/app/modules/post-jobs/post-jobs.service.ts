@@ -23,15 +23,30 @@ export class PostJobsService {
   }
 
   async createPostJobs(postJobsCreateReqDto: PostJobsCreateReqDto) {
-    const datas = postJobsCreateReqDto.posts.map(post => ({
+    // 빈 데이터 필터링: desc가 비어있거나 scheduledAt이 유효하지 않은 데이터 제외
+    const validPosts = postJobsCreateReqDto.posts.filter(post => {
+      return post.desc && post.desc.trim() !== '' && post.scheduledAt
+    })
+
+    if (validPosts.length === 0) {
+      throw new Error('유효한 게시글 데이터가 없습니다. 모든 데이터가 비어있거나 필수 정보가 누락되었습니다.')
+    }
+
+    const datas = validPosts.map(post => ({
       ...post,
       loginId: postJobsCreateReqDto.loginId,
       loginPw: postJobsCreateReqDto.loginPw,
       status: 'pending',
     }))
-    return await this.prisma.postJob.createMany({
+
+    const result = await this.prisma.postJob.createMany({
       data: datas,
     })
+
+    return {
+      ...result,
+      message: `${validPosts.length}개의 게시글이 성공적으로 예약되었습니다. (빈 데이터 ${postJobsCreateReqDto.posts.length - validPosts.length}개 자동 제외)`,
+    }
   }
 
   async deletePostJob(id: number) {

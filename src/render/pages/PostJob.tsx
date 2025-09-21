@@ -97,20 +97,33 @@ const PostJobPage: React.FC = () => {
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
 
           if (jsonData.length > 1) {
-            const posts = (jsonData.slice(1) as any[][]).map((row, index) => {
-              let scheduledAt = row[2] ?? ''
-              if (scheduledAt instanceof Date) {
-                scheduledAt = format(scheduledAt, 'yyyy-MM-dd HH:mm:ss')
-              }
-              return {
-                key: index,
-                subject: row[0] ?? undefined,
-                desc: row[1] ?? '',
-                scheduledAt,
-              }
-            })
-            setData(posts)
-            message.success(`${file.name} 파일이 성공적으로 파싱되었습니다.`)
+            const posts = (jsonData.slice(1) as any[][])
+              .map((row, index) => {
+                let scheduledAt = row[2] ?? ''
+                if (scheduledAt instanceof Date) {
+                  scheduledAt = format(scheduledAt, 'yyyy-MM-dd HH:mm:ss')
+                }
+                return {
+                  key: index,
+                  subject: row[0] ?? undefined,
+                  desc: row[1] ?? '',
+                  scheduledAt,
+                }
+              })
+              .filter(post => {
+                // 빈 데이터 행 무시: desc(글 내용)이 비어있거나 scheduledAt이 비어있으면 제외
+                return post.desc.trim() !== '' && post.scheduledAt.trim() !== ''
+              })
+
+            if (posts.length > 0) {
+              setData(posts)
+              message.success(
+                `${file.name} 파일이 성공적으로 파싱되었습니다. (${posts.length}개 행 처리, 빈 데이터 행 자동 제외)`,
+              )
+            } else {
+              message.warning('유효한 데이터가 없습니다. 모든 행이 비어있거나 필수 정보가 누락되었습니다.')
+              setData([])
+            }
           } else {
             message.error('엑셀 파일에 데이터가 없습니다 (헤더 제외).')
             setData([])
