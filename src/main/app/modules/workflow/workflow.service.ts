@@ -135,6 +135,8 @@ export class WorkflowService {
   async followArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
     // 패널이 나타나면 닫기
     await this.closeModalIfPresent(page)
+    // 삭제 팝업이 나타나면 자동으로 삭제 버튼 클릭
+    await this.handleDeletePopupIfPresent(page)
 
     const button = await article.$('svg[aria-label="팔로우"]')
     if (!button) {
@@ -159,6 +161,8 @@ export class WorkflowService {
   async likeArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
     // 패널이 나타나면 닫기
     await this.closeModalIfPresent(page)
+    // 삭제 팝업이 나타나면 자동으로 삭제 버튼 클릭
+    await this.handleDeletePopupIfPresent(page)
 
     const likeButton = await article.$('svg[aria-label="좋아요"]')
     if (!likeButton) {
@@ -192,12 +196,16 @@ export class WorkflowService {
 
     // 패널 닫기
     await this.closeModalIfPresent(page)
+    // 삭제 팝업이 나타나면 자동으로 삭제 버튼 클릭
+    await this.handleDeletePopupIfPresent(page)
     return isAlreadyReposted
   }
 
   async repostArticle(page: Page, article: ElementHandle<HTMLDivElement>) {
     // 패널이 나타나면 닫기
     await this.closeModalIfPresent(page)
+    // 삭제 팝업이 나타나면 자동으로 삭제 버튼 클릭
+    await this.handleDeletePopupIfPresent(page)
 
     const repostButton = await article.$('svg[aria-label="리포스트"]')
     if (!repostButton) {
@@ -228,6 +236,8 @@ export class WorkflowService {
   async commentArticle(page: Page, article: ElementHandle<HTMLDivElement>, followMessage: string) {
     // 패널이 나타나면 닫기
     await this.closeModalIfPresent(page)
+    // 삭제 팝업이 나타나면 자동으로 삭제 버튼 클릭
+    await this.handleDeletePopupIfPresent(page)
 
     const commentButton = await article.$('svg[aria-label="답글"]')
     if (!commentButton) {
@@ -260,6 +270,46 @@ export class WorkflowService {
       if (!isProcess) {
         throw new Error('댓글 전송버튼 찾을 수 없음')
       }
+
+      // 댓글 전송 후 삭제 팝업이 나타나는지 확인하고 자동으로 삭제 버튼 클릭
+      await this.handleDeletePopupIfPresent(page)
+    }
+  }
+
+  // 삭제 팝업이 나타나면 자동으로 삭제 버튼을 클릭하는 메서드
+  private async handleDeletePopupIfPresent(page: Page) {
+    try {
+      // 삭제 팝업이 나타날 때까지 잠시 대기
+      await page.waitForTimeout(2000)
+
+      // 모든 h2 요소를 찾아서 "스레드를 삭제하시겠어요?" 텍스트가 있는지 확인
+      const h2Elements = await page.$$('h2')
+      let deletePopupFound = false
+
+      for (const h2 of h2Elements) {
+        const text = await h2.textContent()
+        if (text?.includes('스레드를 삭제하시겠어요?')) {
+          deletePopupFound = true
+          break
+        }
+      }
+
+      if (deletePopupFound) {
+        // 삭제 팝업이 나타난 경우, 삭제 버튼을 찾아서 클릭
+        const deleteButtons = await page.$$('div[role="button"]')
+
+        for (const button of deleteButtons) {
+          const buttonText = await button.textContent()
+          if (buttonText?.includes('삭제')) {
+            await button.click()
+            await page.waitForTimeout(1000)
+            break
+          }
+        }
+      }
+    } catch (error) {
+      // 삭제 팝업 처리 중 에러가 발생해도 계속 진행
+      console.log('삭제 팝업 처리 중 에러 발생:', error.message)
     }
   }
 
