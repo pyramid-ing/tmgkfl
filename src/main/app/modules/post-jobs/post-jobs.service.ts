@@ -1,4 +1,5 @@
 import { PrismaService } from '@main/app/modules/common/prisma/prisma.service'
+import { retry } from '@main/app/utils/retry'
 import { EnvConfig } from '@main/config/env.config'
 import { Injectable } from '@nestjs/common'
 import { PostJob } from '@prisma/client'
@@ -88,9 +89,18 @@ export class PostJobsService {
     const groupedPostJobs = groupBy(postJobs, postJob => postJob.loginId)
     for (const loginId in groupedPostJobs) {
       let browser, context
+
       try {
-        const launchResult = await this.workflowService.launch(
-          EnvConfig.isPackaged, // background (개발환경에서는 디버깅용으로 비활성화)
+        // 브라우저 실행을 5회 재시도
+        const launchResult = await retry(
+          async () => {
+            return await this.workflowService.launch(
+              EnvConfig.isPackaged, // background (개발환경에서는 디버깅용으로 비활성화)
+            )
+          },
+          3000, // 2초 간격
+          5, // 5회 재시도
+          'exponential', // 지수적 백오프
         )
         browser = launchResult.browser
         context = launchResult.context
@@ -114,13 +124,22 @@ export class PostJobsService {
       }
 
       try {
-        const postJobs = groupedPostJobs[loginId]
+        const currentPostJobs = groupedPostJobs[loginId]
 
         const page = await context.newPage()
-        await this.workflowService.login(page, { id: loginId, pw: postJobs[0].loginPw })
 
-        for (const postJob of postJobs) {
-          await this.handlePostJob(context, postJob)
+        // 로그인을 5회 재시도
+        await retry(
+          async () => {
+            await this.workflowService.login(page, { id: loginId, pw: currentPostJobs[0].loginPw })
+          },
+          3000,
+          5, // 5회 재시도
+          'exponential', // 지수적 백오프
+        )
+
+        for (const postJob of currentPostJobs) {
+          await this.handlePostJobWithRetry(context, postJob)
         }
       } catch (error) {
         console.error(error)
@@ -159,6 +178,32 @@ export class PostJobsService {
     }
   }
 
+  async handlePostJobWithRetry(context: BrowserContext, postJob: PostJob) {
+    try {
+      // 게시글 처리를 5회 재시도
+      await retry(
+        async () => {
+          await this.handlePostJob(context, postJob)
+        },
+        3000, // 3초 간격
+        5, // 5회 재시도
+        'exponential', // 지수적 백오프
+      )
+    } catch (error) {
+      console.error(`Post job ${postJob.id} failed after all retries:`, error)
+      // 재시도 모두 실패한 경우 최종 실패 처리
+      await this.prisma.postJob.update({
+        where: {
+          id: postJob.id,
+        },
+        data: {
+          status: 'failed',
+          resultMsg: `재시도 후 최종 실패: ${error.message}`,
+        },
+      })
+    }
+  }
+
   async handlePostJob(context: BrowserContext, postJob: PostJob) {
     const page = await context.newPage()
     try {
@@ -172,17 +217,6 @@ export class PostJobsService {
         data: {
           status: 'completed',
           postedAt: new Date(),
-        },
-      })
-    } catch (error) {
-      console.error(error)
-      await this.prisma.postJob.update({
-        where: {
-          id: postJob.id,
-        },
-        data: {
-          status: 'failed',
-          resultMsg: error.message,
         },
       })
     } finally {
