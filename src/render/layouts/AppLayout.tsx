@@ -1,4 +1,3 @@
-import NoticeBanner from '@render/components/shared/NoticeBanner'
 import { Layout } from 'antd'
 import React from 'react'
 import styled from 'styled-components'
@@ -32,10 +31,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <AppSidebar />
       <Layout>
         <AppHeader />
-        <StyledContent>
-          <NoticeBanner />
-          {children}
-        </StyledContent>
+        <StyledContent>{children}</StyledContent>
       </Layout>
     </StyledLayout>
   )

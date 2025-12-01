@@ -4,6 +4,15 @@ export interface Env {
 
 export interface CustomConfig {
   n8n: {
-    webhookUrl: string
+    endpoint: string | undefined
+  }
+  keymaster: {
+    endpoint: string
+    service: string
+  }
+  supabase: {
+    endpoint: string | undefined
+    anonKey: string | undefined
+    service: string
   }
 }

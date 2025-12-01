@@ -1,9 +1,22 @@
 import { PrismaService } from '@main/app/modules/common/prisma/prisma.service'
 import { Injectable, Logger } from '@nestjs/common'
 import { OpenAI } from 'openai'
+import { Permission } from '../auth/auth.guard'
 
 interface AppSettings {
   showBrowserWindow: boolean
+}
+
+// 라이선스 및 기타 글로벌 설정 구조
+export interface GlobalSettings {
+  licenseKey?: string
+  licenseCache?: {
+    isValid: boolean
+    permissions: Permission[]
+    expiresAt?: number
+  } | null
+  // 그 외 글로벌 설정도 자유롭게 포함 가능
+  [key: string]: any
 }
 
 @Injectable()
@@ -20,6 +33,23 @@ export class SettingsService {
         showBrowserWindow: true,
       }
     )
+  }
+
+  // 글로벌 설정 조회 (라이선스 포함)
+  async getSettings(): Promise<GlobalSettings> {
+    const settings = await this.findByKey('global')
+    return (settings?.data as GlobalSettings) || {}
+  }
+
+  // 글로벌 설정 부분 업데이트 (merge)
+  async updateSettings(partial: Partial<GlobalSettings>): Promise<GlobalSettings> {
+    const current = await this.getSettings()
+    const next: GlobalSettings = {
+      ...current,
+      ...partial,
+    }
+    await this.saveByKey('global', next)
+    return next
   }
 
   // 모든 설정 조회
@@ -77,14 +107,14 @@ export class SettingsService {
     } catch (error) {
       this.logger.error('OpenAI API 키 검증 실패:', error)
 
-      if (error.status === 401) {
+      if ((error as any).status === 401) {
         return { valid: false, error: '유효하지 않은 API 키입니다.' }
-      } else if (error.status === 429) {
+      } else if ((error as any).status === 429) {
         return { valid: false, error: 'API 사용량 한도를 초과했습니다.' }
-      } else if (error.status === 403) {
+      } else if ((error as any).status === 403) {
         return { valid: false, error: 'API 키에 필요한 권한이 없습니다.' }
       } else {
-        return { valid: false, error: `API 키 검증 실패: ${error.message}` }
+        return { valid: false, error: `API 키 검증 실패: ${(error as any).message}` }
       }
     }
   }
